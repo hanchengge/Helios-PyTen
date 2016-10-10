@@ -50,7 +50,7 @@ class tensor(object):
 			shape = tuple(data.shape)
 
 		self.shape = shape
-		self.data = data.reshape(shape)
+		self.data = data.reshape(shape, order='F')
 
 	def __str__(self):
 		string = "tensor of size {0} with {1} elements.\n".format(self.shape, tools.prod(self.shape))
@@ -107,9 +107,7 @@ class tensor(object):
 		if (order is None):
 			raise ValueError('Please specify the order.')
 
-		iorder = [];
-		for i in range(0, len(order)):
-			iorder.append(order.index(i))
+		iorder = [order[idx] for idx in range(0, len(order))]
 
 		return self.permute(iorder)
 
@@ -144,7 +142,6 @@ class tensor(object):
 		order = [dim] + range(0,dim) + range(dim+1,N)
 		newData = self.permute(order).data
 		newData = newData.reshape(shape[dim], tools.prod(shape)/shape[dim])
-		print newData
 		if(option == None):
 			newData = np.dot(matrix, newData)
 			p = matrix.shape[0]
@@ -195,10 +192,11 @@ class tensor(object):
 		return newData
 
 
-
 if __name__ == '__main__':
-	X = tensor([[[1,2,3,4],[5,6,7,8],[9,10,11,12]],[[13,14,15,16],[17,18,19,20],[21,22,23,24]]])
+	X = tensor(range(1,25),[2,4,3])
 	V = [[1,2],[2,1]]
-	print X.ttm(V,1).data
+	Y = X.ttm(V,1)
+	print Y.data[:,:,0]
 	print X.__str__()
+	print X.__class__
 	
