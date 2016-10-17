@@ -9,6 +9,7 @@ class tenmat(object):
 			raise ValueError('Tenmat: first argument cannot be empty.')
 
 		if X.__class__ == tensor.tensor:
+			# convert a tensor to a matrix
 			if rdim is None:
 				raise ValueError('Tenmat: second argument cannot be empty.')
 
@@ -16,17 +17,15 @@ class tenmat(object):
 				rdim = np.array(rdim) - 1
 
 			self.shape = X.shape
-			ndims = X.ndims()
 
 			if cdim is None:
-				cdim = np.array([x for x in range(0,ndims) if x not in rdim])
+				cdim = np.array([x for x in range(0,X.ndims) if x not in rdim])
 			elif cdim.__class__ == list or cdim.__class__ == int:
 				cdim = np.array(cdim) - 1
 			else:
 				raise ValueError("Tenmat: incorrect specification of dimensions.")
 
-			if not (range(0, ndims) == sorted(np.append(rdim, cdim))):
-				print (range(0, ndims) == sorted(np.append(rdim, cdim)))
+			if not (range(0, X.ndims) == sorted(np.append(rdim, cdim))):
 				raise ValueError("Tenmat: second argument must be a list or an integer.")
 
 			self.rowIndices = rdim
@@ -39,6 +38,7 @@ class tenmat(object):
 
 			self.data = X.data.reshape([row, col], order='F')
 		elif X.__class__ == numpy.ndarray:
+			# copy a matrix to a tenmat object
 			if len(X.shape) != 2:
 				raise ValueError("Tenmat: first argument must be a 2-D numpy array when converting a matrix to tenmat.")
 
@@ -60,15 +60,18 @@ class tenmat(object):
 			self.shape = tsize
 
 	def copy(self):
+		# returns a deepcpoy of tenmat object
 		return tenmat(self.data, self.rowIndices, self.colIndices, self.shape)
 
 	def totensor(self):
+		# returns a tensor object based on a tenmat
 		order = np.append(self.rowIndices, self.colIndices)
 		data = self.data.reshape([self.shape[idx] for idx in order], order='F');
 		tData = tensor.tensor(data).ipermute(order);
 		return tData
 
 	def tondarray(self):
+		# returns data of a tenmat with a numpy.ndarray object
 		return self.data
 
 	def __str__(self):

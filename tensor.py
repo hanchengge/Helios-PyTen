@@ -1,5 +1,7 @@
 import numpy as np
 import tools
+import sys
+import inspect
 
 class tensor(object):
 	def __init__(self, data=None, shape=None):
@@ -51,6 +53,7 @@ class tensor(object):
 
 		self.shape = shape
 		self.data = data.reshape(shape, order='F')
+		self.ndims = len(self.shape)
 
 	def __str__(self):
 		string = "tensor of size {0} with {1} elements.\n".format(self.shape, tools.prod(self.shape))
@@ -64,17 +67,13 @@ class tensor(object):
 		# returns a deepcpoy of tensor object
 		return tensor(self.data)
 
-	def ndims(self):
-		# returns the number of dimensions
-		return len(self.shape)
-
 	def dimsize(self, idx=None):
 		# returns the size of the specified dimension
 		if idx is None:
 			raise ValueError('Please specify the index of that dimension.')
 		if (idx.__class__ != int):
 			raise ValueError('Index of the dimension must be an integer.')
-		if (idx >= self.ndims()):
+		if (idx >= self.ndims):
 			raise ValueError('Index exceeds the number of dimensions.')
 		return self.shape[idx]
 
@@ -90,10 +89,10 @@ class tensor(object):
 		if (order.__class__ == list or order.__class__ == tuple):
 			order = np.array(order)
 
-		if(self.ndims() != len(order)):
+		if(self.ndims != len(order)):
 			raise ValueError("Permute: Invalid permutation order.")
 
-		if not ((sorted(order) == np.arange(self.ndims())).all()):
+		if not ((sorted(order) == np.arange(self.ndims)).all()):
 			raise ValueError("Permute: Invalid permutation order.")
 
 		newData = self.data.copy()
@@ -112,6 +111,7 @@ class tensor(object):
 		return self.permute(iorder)
 
 	def tondarray(self):
+		# returns data of the tensor with a numpy.ndarray object
 		return self.data
 
 	def ttm(self, mat = None, mode = None, option = None):
@@ -120,7 +120,7 @@ class tensor(object):
 		if (mat is None):
 			raise ValueError('Tensor/TTM: matrix (mat) needs to be specified.')
 
-		if (mode is None or mode.__class__ != int or mode > self.ndims() or mode < 1):
+		if (mode is None or mode.__class__ != int or mode > self.ndims or mode < 1):
 			raise ValueError('Tensor/TTM: mode must be between 1 and NDIMS(tensor).')
 
 		if (mat.__class__ == list):
@@ -137,7 +137,7 @@ class tensor(object):
 			raise ValueError('Tensor/TTM: matrix dimensions must agree.')
 
 		dim = mode - 1
-		N = self.ndims()
+		N = self.ndims
 		shape = list(self.shape)
 		order = [dim] + range(0,dim) + range(dim+1,N)
 		newData = self.permute(order).data
@@ -162,7 +162,7 @@ class tensor(object):
 		if (vec is None):
 			raise ValueError('Tensor/TTV: vector (vec) needs to be specified.')
 
-		if (mode is None or mode.__class__ != int or mode > self.ndims() or mode < 1):
+		if (mode is None or mode.__class__ != int or mode > self.ndims or mode < 1):
 			raise ValueError('Tensor/TTM: mode must be between 1 and NDIMS(tensor).')
 
 		if (vec.__class__ == list):
@@ -179,7 +179,7 @@ class tensor(object):
 			raise ValueError('Tensor/TTV: vector dimension must agree.')
 
 		dim = mode - 1
-		N = self.ndims()
+		N = self.ndims
 		shape = list(self.shape)
 		order = [dim] + range(0,dim) + range(dim+1,N)
 		newData = self.permute(order).data

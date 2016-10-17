@@ -2,6 +2,10 @@ import numpy;
 import cmath;
 import math;
 
+def uniquerows(arg):
+    # made by GHC
+    return np.unique(arg.view(np.dtype((np.void, arg.dtype.itemsize*arg.shape[1])))).view(arg.dtype).reshape(-1, arg.shape[1])
+
 def prod(arg):
     """ returns the product of elements in arg.
     arg can be list, tuple, set, and array with numerical values. """
@@ -220,3 +224,8 @@ def tt_sizecheck(size):
     if(not isOk):
         raise ValueError("size must be a row vector of real positive integers");
     return isOk;
+
+if __name__ == '__main__':
+    shape = (4,4,4)
+    subs = [0,0,0]
+    print sub2ind(shape, subs)
