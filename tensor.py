@@ -104,9 +104,21 @@ class tensor(object):
 	def ipermute(self, order=None):
 		# returns a tensor permuted by the inverse of the order specified
 		if (order is None):
-			raise ValueError('Please specify the order.')
+			raise ValueError('Ipermute: please specify the order.')
 
-		iorder = [order[idx] for idx in range(0, len(order))]
+		if (order.__class__ == np.array or order.__class__ == tuple):
+			order = list(order)
+		else:
+			if (order.__class__ != list):
+				raise ValueError('Ipermute: permutation order must be a list.')
+
+		if(self.ndims != len(order)):
+			raise ValueError("Ipermute: invalid permutation order.")
+
+		if not ((sorted(order) == np.arange(self.ndims)).all()):
+			raise ValueError("Ipermute: invalid permutation order.")
+
+		iorder = [order.index(idx) for idx in range(0, len(order))]
 
 		return self.permute(iorder)
 
