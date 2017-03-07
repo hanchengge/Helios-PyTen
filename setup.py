@@ -24,14 +24,14 @@ def deps_install():
                   manual installation.. Exiting" % package)
             exit(2)
 
-class PyTen_install(install):
+class pyten_install(install):
     def run(self):
         deps_install()
         import numpy as np
         include_dirs.append(np.get_include())
         install.run(self)
 
-class PyTen_develop(develop):
+class pyten_develop(develop):
     def run(self):
         deps_install()
         import numpy as np
@@ -39,7 +39,7 @@ class PyTen_develop(develop):
         develop.run(self)
 
 local_path = os.path.split(os.path.realpath(__file__))[0]
-version_file = os.path.join(local_path, 'PyTen/_version.py')
+version_file = os.path.join(local_path, 'pyten/_version.py')
 version_strline = open(version_file).read()
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
 mo = re.search(VSRE, version_strline, re.M)
@@ -48,7 +48,7 @@ if mo:
 else:
     raise RuntimeError("Unable to find version string in %s." % (version_file,))
 
-setup(name = "PyTen",
+setup(name = "pyten",
       version = version,
       packages=find_packages(),
       include_package_data=True,
@@ -58,7 +58,7 @@ setup(name = "PyTen",
       description="Tools for the decomposition & completion of tensors",
       #      long_description=open("README.rst").read(),
       zip_safe = False,         # I need this for MPI purposes
-      cmdclass={'install': PyTen_install,
-                'develop': PyTen_develop},
-      include_dirs=include_dirs
+      cmdclass={'install': pyten_install,
+                'develop': pyten_develop},
+      include_dirs=include_dirs, requires=['numpy', 'scipy', 'pandas']
       )
