@@ -1,1 +1,0 @@
-from PyTen.tenclass import *
