@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-__author__ = "Hancheng Ge"
-__copyright__ = "Copyright 2016, The Helios Project"
-
 import pyten.tenclass
 import numpy as np
 from pyten.tools import tools
@@ -9,11 +5,26 @@ import pyten.tenclass
 
 
 class Tenmat(object):
-    def __init__(self, X=None, rdim=None, cdim=None, tsize=None):
-        if X is None:
+    """
+    Store a Matricization of a Tensor object.
+    """
+
+    def __init__(self, x=None, rdim=None, cdim=None, tsize=None):
+        """
+        Create a Tenmat object from a given Tensor X
+         ----------
+        :param x: dense Tensor object.
+        :param rdim: an one-dim array representing the arranged dimension index for the matrix column
+        :param cdim: an one-dim array representing the arranged dimension index for the matrix row
+        :param tsize: a tuple denoting the size of the original tensor
+        :return: constructed Matricization of a Tensor object.
+        ----------
+        """
+
+        if x is None:
             raise ValueError('Tenmat: first argument cannot be empty.')
 
-        if X.__class__ == pyten.tenclass.Tensor:
+        if x.__class__ == pyten.tenclass.Tensor:
             # convert a Tensor to a matrix
             if rdim is None:
                 raise ValueError('Tenmat: second argument cannot be empty.')
@@ -21,41 +32,41 @@ class Tenmat(object):
             if rdim.__class__ == list or rdim.__class__ == int:
                 rdim = np.array(rdim) - 1
 
-            self.shape = X.shape
+            self.shape = x.shape
 
             ##################
             if cdim is None:
-                cdim = np.array([x for x in range(0, X.ndims) if x not in np.zeros(X.ndims - 1) + rdim])
+                cdim = np.array([y for y in range(0, x.ndims) if y not in np.zeros(x.ndims - 1) + rdim])
             elif cdim.__class__ == list or cdim.__class__ == int:
                 cdim = np.array(cdim) - 1
             else:
                 raise ValueError("Tenmat: incorrect specification of dimensions.")
             ##################
 
-            if not (range(0, X.ndims) == sorted(np.append(rdim, cdim))):
+            if not (range(0, x.ndims) == sorted(np.append(rdim, cdim))):
                 raise ValueError("Tenmat: second argument must be a list or an integer.")
 
             self.rowIndices = rdim
             self.colIndices = cdim
 
-            X = X.permute(np.append(rdim, cdim))
+            x = x.permute(np.append(rdim, cdim))
 
             ##################
             if type(rdim) != np.ndarray:
-                row = tools.prod([self.shape[x] for x in [rdim]])
+                row = tools.prod([self.shape[y] for y in [rdim]])
             else:
-                row = tools.prod([self.shape[x] for x in rdim])
+                row = tools.prod([self.shape[y] for y in rdim])
 
             if type(cdim) != np.ndarray:
-                col = tools.prod([self.shape[x] for x in [cdim]])
+                col = tools.prod([self.shape[y] for y in [cdim]])
             else:
-                col = tools.prod([self.shape[x] for x in cdim])
+                col = tools.prod([self.shape[y] for y in cdim])
             ##################
 
-            self.data = X.data.reshape([row, col], order='F')
-        elif X.__class__ == np.ndarray:
+            self.data = x.data.reshape([row, col], order='F')
+        elif x.__class__ == np.ndarray:
             # copy a matrix to a Tenmat object
-            if len(X.shape) != 2:
+            if len(x.shape) != 2:
                 raise ValueError("Tenmat: first argument must be a 2-D numpy array when converting a matrix to Tenmat.")
 
             if tsize is None:
@@ -66,11 +77,11 @@ class Tenmat(object):
                 else:
                     rdim = np.array(rdim) - 1
                     cdim = np.array(cdim) - 1
-                    if tools.prod([tsize[idx] for idx in rdim]) != X.shape[0]:
+                    if tools.prod([tsize[idx] for idx in rdim]) != x.shape[0]:
                         raise ValueError("Tenmat: matrix size[0] does not match the Tensor size specified.")
-                    if tools.prod([tsize[idx] for idx in cdim]) != X.shape[1]:
+                    if tools.prod([tsize[idx] for idx in cdim]) != x.shape[1]:
                         raise ValueError("Tenmat: matrix size[1] does not match the Tensor size specified.")
-            self.data = X
+            self.data = x
             self.rowIndices = rdim
             self.colIndices = cdim
             self.shape = tsize
@@ -83,8 +94,8 @@ class Tenmat(object):
         # returns a Tensor object based on a Tenmat
         order = np.append(self.rowIndices, self.colIndices)
         data = self.data.reshape([self.shape[idx] for idx in order], order='F')
-        tData = pyten.tenclass.Tensor(data).ipermute(list(order))
-        return tData
+        t_data = pyten.tenclass.Tensor(data).ipermute(list(order))
+        return t_data
 
     def tondarray(self):
         # returns data of a Tenmat with a numpy.ndarray object
