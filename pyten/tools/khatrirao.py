@@ -1,20 +1,20 @@
+#!/usr/bin/env python
+__author__ = "Qingquan Song, Hancheng Ge"
+__copyright__ = "Copyright 2016, The Helios Project"
+
+
 import numpy as np
 
-
-def khatrirao(u):
-    """
-    Calculate The Khatrirao Product
-    :param u: a list of 2-D arrays
-    """
-
-    r = u[0].shape[1]
-    k = []
-    n = len(u)
+def khatrirao(U):
+    """Calculate The Khatrirao Product"""
+    r=U[0].shape[1]
+    K=[]
+    N = len(U)
     for j in range(r):
-        temp = 1
-        for i in range(n):
-            temp1 = np.outer(temp, u[i][:, j])
-            temp = temp1.reshape([1, temp1.size])
-        k = np.append(k, temp)
-    k = (k.reshape([r, len(k) / r])).transpose()
-    return k
+        temp=1
+        for i in range(N):
+            temp1=np.outer(temp,U[i][:,j])
+            temp=temp1.reshape([1,temp1.size])
+        K=np.append(K,temp)
+    K=(K.reshape([r,len(K)/r])).transpose()
+    return K

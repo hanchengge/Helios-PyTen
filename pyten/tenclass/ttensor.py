@@ -1,70 +1,49 @@
+#!/usr/bin/env python
+__author__ = "Hancheng Ge"
+__copyright__ = "Copyright 2016, The Helios Project"
+
 import pyten.tenclass
 import numpy as np
 from pyten.tools import tools
 
 
 class Ttensor(object):
-    """
-    Tensor stored in decomposed form as a Tucker Decomposition.
-    ----------
-    Intended Usage
-        Store the results of a CP decomposition.
-    Parameters
-    ----------
-    """
-    def __init__(self, core, us):
-        """
-        Constructor for Ttensor (Tucker Tensor) object with the core and latent matrices.
-        ----------
-        :type self: object
-        :param core : core tensor in Tucker decomposition which is of
-           the same size as original tensor
-
-        :param us : list of ndarrays
-           Factor matrices from which the Tensor representation
-           is created. All factor matrices ``U[i]`` must have the
-           same number of columns, but can have different
-           number of rows.
-        ----------
-        """
+    def __init__(self, core, Us):
+        # create a tucker Tensor object with the core and latent matrices.
         if core.__class__ != pyten.tenclass.Tensor:
             raise ValueError("Ttensor: core must a Tensor object.")
 
-        if us.__class__ != list:
+        if Us.__class__ != list:
             raise ValueError("Ttensor: latent matrices should be a list of matrices.")
         else:
-            for i,U in enumerate(us):
+            for i,U in enumerate(Us):
                 if np.array(U).ndim != 2:
                     raise ValueError("Ttensor: latent matrix U{0} must be a 2-D matrix.".format(i))
 
-        if core.ndims != len(us):
+        if core.ndims != len(Us):
             raise ValueError("Ttensor: number of dimensions of the core Tensor is different with number of latent matrices.")
 
         k = core.shape
 
         for i in range(0, core.ndims):
-            if k[i] != np.array(us[i]).shape[1]:
+            if k[i] != np.array(Us[i]).shape[1]:
                 raise ValueError("Ttensor: latent matrix U{0} does not have {1} columns.".format(i, k[i]))
 
         self.core = core.copy()
-        self.us = us
+        self.us = Us
 
         shape = []
         for i in range(0, core.ndims):
-            shape.append(len(us[i]))
+            shape.append(len(Us[i]))
         self.shape = tuple(shape)
         self.ndims = core.ndims
 
     def size(self):
-        """
-        Returns the size of this tucker Tensor
-        """
+        # returns the size of this tucker Tensor
         return tools.prod(self.shape)
 
     def dimsize(self, idx = None):
-        """
-        Returns the size of the dimension specified by index
-        """
+        # returns the size of the dimension specified by index
         if idx is None:
             raise ValueError("Ttensor: index of a dimension cannot be empty.")
         if idx.__class__ != int or idx < 1 or idx > self.ndims:
@@ -73,15 +52,11 @@ class Ttensor(object):
         return self.shape[idx]
 
     def copy(self):
-        """
-        Returns a deepcpoy of tucker Tensor object
-        """
+        # returns a deepcpoy of tucker Tensor object
         return Ttensor(self.core, self.us)
 
     def totensor(self):
-        """
-        Returns a Tensor object that is represented by the tucker Tensor
-        """
+        # returns a Tensor object that is represented by the tucker Tensor
         X = self.core.copy()
         for i in range(0, self.ndims):
             X=X.ttm(self.us[i], i+1)

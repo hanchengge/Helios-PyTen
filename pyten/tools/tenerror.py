@@ -1,15 +1,16 @@
+#!/usr/bin/env python
+__author__ = "Qingquan Song"
+__copyright__ = "Copyright 2016, The Helios Project"
+
 import numpy as np
 import pyten.tenclass
 
 
 def tenerror(fitx, realx, omega):
+    """Calculate Three Kinds of Error
+    fitx:
+    realx:
     """
-    Calculate Three Kinds of Error
-    :param fitx: fitted tensor
-    :param realx: ground-truth tensor
-    :param omega: index tensor of observed entries
-    """
-
     if type(omega) != np.ndarray and type(omega) != pyten.tenclass.Tensor:
         raise ValueError("AirCP: cannot recognize the format of observed Tensor!")
     elif type(omega) == pyten.tenclass.Tensor:

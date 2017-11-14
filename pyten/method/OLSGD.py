@@ -1,3 +1,9 @@
+__author__ = 'Song'
+
+# !/usr/bin/env python
+__author__ = "Qingquan Song"
+__copyright__ = "Copyright 2016, The Helios Project"
+
 import copy
 
 import numpy as np
@@ -6,13 +12,10 @@ import pyten.tenclass
 
 
 class OLSGD(object):
-    """
-    This routine solves the online tensor completion problem
-    with CP decomposition and online SGD optimization scheme
-    """
-
+    # This routine solves the online Tensor decomposition problem using CP decomposition
+    # Online Tensor completion with CP decomposition (SGD optimization)
     def __init__(self, rank=20, mu=0.01, lmbda=0.1):
-        """ Initialization stage of OLSGD"""
+        # Initialization stage of OLSTEC
         self.mu = mu
         if type(rank) == list or type(rank) == tuple:
             rank = rank[0]
@@ -28,31 +31,27 @@ class OLSGD(object):
         self.omega = None
         self.shape = None
 
-    def update(self, new_x, omega=None, mut=0.01, lmbdat=0.1):
-        """
-        Update stage of OLSGD
-        --------
-        :param
-                 new_x: the new incoming data Tensor
-                 As: a cell array contains the previous loading matrices of initX
-        :return
-                As: a cell array contains the updated loading matrices of initX.
-                     To save time, As(N) is not modified, instead, projection of
-                     new_x on time mode (alpha) is given in the output
-                Ps, Qs: cell arrays contain the updated complementary matrices
-                alpha: coefficient on time mode of new_x
-        --------
-        """
+    def update(self, newX, omega=None, mut=0.01, lmbdat=0.1):
+        ## Update stage of OLSGD
+        # input:  newX, the new incoming data Tensor
+        #         As, a cell array contains the previous loading matrices of initX
+        # ouputs: As, a cell array contains the updated loading matrices of initX.
+        #             To save time, As(N) is not modified, instead, projection of
+        #             newX on time mode (alpha) is given in the output
+        #         Ps, Qs, cell arrays contain the updated complementary matrices
+        #         alpha, coefficient on time mode of newX
+
 
         self.mu = mut
         self.lmbda = lmbdat
 
-        if type(new_x) != pyten.tenclass.Tensor and type(new_x) != np.ndarray:
+        if type(newX) != pyten.tenclass.Tensor and type(newX) != np.ndarray:
             raise ValueError("OLSGD: cannot recognize the format of observed Tensor!")
-        elif type(new_x) == np.ndarray:
-            new_x = pyten.tenclass.Tensor(new_x)
+        elif type(newX) == np.ndarray:
+            newX = pyten.tenclass.Tensor(newX)
 
-        self.T = new_x
+
+        self.T = newX
         if omega is None:
             self.omega = self.T.data * 0 + 1
         elif type(omega) != pyten.tenclass.Tensor and type(omega) != np.ndarray:
@@ -62,7 +61,7 @@ class OLSGD(object):
         else:
             self.omega = omega
 
-        dims = list(new_x.shape)
+        dims = list(newX.shape)
         if len(dims) == 2:
             dims.insert(0, 1)
             self.T.data = self.T.data.reshape(dims)
@@ -105,8 +104,7 @@ class OLSGD(object):
             tempfitx = tempfitx.reshape([1, dims[1], dims[2]])
             if not self.X:
                 self.X = pyten.tenclass.Tensor(tempfitx)
-                temprecx = self.T.data[0, :, :] * self.omega.data[0, :, :] + self.X.data * (
-                    1 - self.omega.data[0, :, :])
+                temprecx = self.T.data[0, :, :] * self.omega.data[0, :, :] + self.X.data * (1 - self.omega.data[0, :, :])
                 self.rec = pyten.tenclass.Tensor(temprecx)
             else:
                 self.X = pyten.tenclass.Tensor(np.row_stack((self.X.data, tempfitx)))

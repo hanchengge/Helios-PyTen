@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+__author__ = "Hancheng Ge"
+__copyright__ = "Copyright 2016, The Helios Project"
+
 import numpy as np
 import pyten.tenclass
 import pyten.tools
@@ -5,42 +9,42 @@ import pyten.tools
 
 class Ktensor(object):
     """
-    Tensor stored in decomposed form as a Kruskal operator (CP decomposition).
+    Tensor stored in decomposed form as a Kruskal operator.
     ----------
     Intended Usage
-        Store the results of a CP decomposition.
+        The Kruskal operator is particularly useful to store
+        the results of a CP decomposition.
     Parameters
     ----------
+    lmbda : array_like of floats, optional
+            Weights for each dimension of the Kruskal operator.
+            ``len(lambda)`` must be equal to ``U[i].shape[1]``
+
+    Us : list of ndarrays
+        Factor matrices from which the Tensor representation
+        is created. All factor matrices ``U[i]`` must have the
+        same number of columns, but can have different
+        number of rows.
+    --------
     """
 
-    def __init__(self, lmbda=None, us=None):
+    def __init__(self, lmbda=None, Us=None):
         """
-        Constructor for Ktensor (CP Tensor) object with the weights and latent matrices.
-        ----------
-        :type self: object
-        :param lmbda : array_like of floats, optional
-           Weights for each dimension of the Kruskal operator.
-           ``len(lambda)`` must be equal to ``U[i].shape[1]``
 
-        :param us : list of ndarrays
-           Factor matrices from which the Tensor representation
-           is created. All factor matrices ``U[i]`` must have the
-           same number of columns, but can have different
-           number of rows.
-        ----------
+        :type self: object
         """
-        if us is None:
+        if Us is None:
             raise ValueError("Ktensor: first argument cannot be empty.")
         else:
-            self.Us = np.array(us)
-        self.shape = tuple(Ui.shape[0] for Ui in us)
+            self.Us = np.array(Us)
+        self.shape = tuple(Ui.shape[0] for Ui in Us)
         self.ndim = len(self.Us)
         self.rank = self.Us[0].shape[1]
         if lmbda is None:
             self.lmbda = np.ones(len(self.rank))
         else:
             self.lmbda = np.array(lmbda)
-        if not all(np.array([Ui.shape[1] for Ui in us]) == self.rank):
+        if not all(np.array([Ui.shape[1] for Ui in Us]) == self.rank):
             raise ValueError('Ktensor: dimension mismatch of factor matrices')
 
     def norm(self):
@@ -49,7 +53,7 @@ class Ktensor(object):
         Returns: None
         -------
         norm : float
-               Frobenius norm of the Ktensor
+            Frobenius norm of the Ktensor
         """
         coefmatrix = np.dot(self.Us[0].T, self.Us[0])
         for i in range(1, self.ndim):
@@ -67,8 +71,8 @@ class Ktensor(object):
             Fully computed multidimensional array whose shape matches
             the original Ktensor.
         """
-        a = np.dot(self.lmbda.T, pyten.tools.khatrirao(self.Us).T)
-        return a.reshape(self.shape)
+        A = np.dot(self.lmbda.T, pyten.tools.khatrirao(self.Us).T)
+        return A.reshape(self.shape)
 
     def totensor(self):
         """
