@@ -41,7 +41,7 @@ class Ktensor(object):
         self.ndim = len(self.Us)
         self.rank = self.Us[0].shape[1]
         if lmbda is None:
-            self.lmbda = np.ones(len(self.rank))
+            self.lmbda = np.ones(self.rank)
         else:
             self.lmbda = np.array(lmbda)
         if not all(np.array([Ui.shape[1] for Ui in Us]) == self.rank):

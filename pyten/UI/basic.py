@@ -127,12 +127,19 @@ def basic(FileName=None, FunctionName=None, Recover=None, Omega=None, R=2, tol=1
 
     # Reconstruct
     df = dat1
-    for i in range(nv):
-        pos = map(sum, newsubs == subs[i])
-        idx = pos.index(nd)
-        temp = tempvals[idx]
+    # for i in range(nv):
+    #     pos = map(sum, newsubs == subs[i])
+    #     idx = pos.index(nd)
+    #     temp = tempvals[idx]
+    #     df.iloc[i, nd] = temp[0]
+    #     # newvals.append(list(tempvals(idx)));
+
+    for i in range(nv): # from ziwei zhu, this is much faster
+        idx = np.where((newsubs == subs[i]).all(axis=1))
+        # find the one whose index in the Rec is equal to the index in Ori
+        temp = tempvals[idx[0]]
         df.iloc[i, nd] = temp[0]
-        # newvals.append(list(tempvals(idx)));
+
     df.to_csv(newfilename, sep=';', index=0)
 
 
