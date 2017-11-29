@@ -1,9 +1,4 @@
-#!/usr/bin/env python
-__author__ = "Hancheng Ge"
-__copyright__ = "Copyright 2016, The Helios Project"
-
 import sys
-
 sys.path.append('/path/to/pyten/tenclass')
 import sptensor
 import numpy as np
@@ -11,10 +6,20 @@ from pyten.tools import tools
 
 
 class Tensor(object):
+    """
+    Store a basic Tensor.
+    """
+
     def __init__(self, data=None, shape=None):
-        # constructor for Tensor object.
-        # data can be numpy.array or list.
-        # shape can be tuple, numpy.array, or list of integers
+        """
+        Constructor for Tensor object.
+        ----------
+        :param data: can be numpy, array or list.
+        :param shape: can be tuple, numpy.array, or list of integers
+        :return: constructed Tensor object.
+        ----------
+        """
+
         if data is None:
             raise ValueError('Tensor: first argument cannot be empty.')
 
@@ -27,7 +32,7 @@ class Tensor(object):
         if shape:
             if shape.__class__ != tuple:
                 if shape.__class__ == list:
-                    if (len(shape) < 2):
+                    if len(shape) < 2:
                         raise ValueError('Tensor: second argument must be a row vector with at least two elements.')
                     elif shape[0].__class__ != int:
                         if len(shape[0]) == 1:
@@ -67,28 +72,27 @@ class Tensor(object):
         return string
 
     def size(self):
-        # returns the number of elements in the Tensor
+        """ Returns the number of elements in the Tensor """
         return self.data.size
 
     def copy(self):
-        # returns a deepcpoy of Tensor object
+        """ Returns a deepcpoy of Tensor object """
         return Tensor(self.data)
 
     def dimsize(self, idx=None):
-        # returns the size of the specified dimension
+        """ Returns the size of the specified dimension """
         if idx is None:
             raise ValueError('Please specify the index of that dimension.')
-        if (idx.__class__ != int):
+        if idx.__class__ != int:
             raise ValueError('Index of the dimension must be an integer.')
-        if (idx >= self.ndims):
+        if idx >= self.ndims:
             raise ValueError('Index exceeds the number of dimensions.')
         return self.shape[idx]
 
     def tosptensor(self):
-        """ returns the Sptensor object
+        """ Returns the Sptensor object
             that contains the same value with the Tensor object."""
 
-        length = len(self.shape)
         sub = tools.allIndices(self.shape)
         return sptensor.Sptensor(
             sub,
@@ -96,7 +100,7 @@ class Tensor(object):
             self.shape)
 
     def permute(self, order=None):
-        """ returns a Tensor permuted by the order specified."""
+        """ Returns a Tensor permuted by the order specified."""
         if order is None:
             raise ValueError("Permute: Order must be specified.")
 
@@ -116,12 +120,10 @@ class Tensor(object):
         return Tensor(newdata)
 
     def ipermute(self, order=None):
-        # returns a Tensor permuted by the inverse of the order specified
-        if (order is None):
-            raise ValueError('Please specify the order.')
+        """ Returns a Tensor permuted by the inverse of the order specified """
+        if order is None:
             raise ValueError('Ipermute: please specify the order.')
 
-        iorder = [order[idx] for idx in range(0, len(order))]
         if order.__class__ == np.array or order.__class__ == tuple:
             order = list(order)
         else:
@@ -138,12 +140,12 @@ class Tensor(object):
         return self.permute(iorder)
 
     def tondarray(self):
-        # returns data of the Tensor with a numpy.ndarray object
+        """ Returns data of the Tensor with a numpy.ndarray object """
         return self.data
 
     def ttm(self, mat=None, mode=None, option=None):
-        # multiplies the Tensor with the given matrix.
-        # the given matrix is a single 2-D array with list or numpy.array.
+        """ Multiplies the Tensor with the given matrix.
+            the given matrix is a single 2-D array with list or numpy.array."""
         if mat is None:
             raise ValueError('Tensor/TTM: matrix (mat) needs to be specified.')
 
@@ -160,33 +162,33 @@ class Tensor(object):
         if len(matrix.shape) != 2:
             raise ValueError('Tensor/TTM: first argument must be a matrix.')
 
-        if (matrix.shape[1] != self.shape[mode - 1]):
+        if matrix.shape[1] != self.shape[mode - 1]:
             raise ValueError('Tensor/TTM: matrix dimensions must agree.')
 
         dim = mode - 1
-        N = self.ndims
+        n = self.ndims
         shape = list(self.shape)
-        order = [dim] + range(0, dim) + range(dim + 1, N)
-        newData = self.permute(order).data
-        newData = newData.reshape(shape[dim], tools.prod(shape) / shape[dim])
+        order = [dim] + range(0, dim) + range(dim + 1, n)
+        new_data = self.permute(order).data
+        new_data = new_data.reshape(shape[dim], tools.prod(shape) / shape[dim])
         if option is None:
-            newData = np.dot(matrix, newData)
+            new_data = np.dot(matrix, new_data)
             p = matrix.shape[0]
-        elif (option == 't'):
-            newData = np.dot(matrix.transpose(), newData)
+        elif option == 't':
+            new_data = np.dot(matrix.transpose(), new_data)
             p = matrix.shape[1]
         else:
             raise ValueError('Tensor/TTM: unknown option')
-        newShape = [p] + shape[0:dim] + shape[dim + 1:N]
-        newData = Tensor(newData.reshape(newShape))
-        newData = newData.ipermute(order)
+        new_shape = [p] + shape[0:dim] + shape[dim + 1:n]
+        new_data = Tensor(new_data.reshape(new_shape))
+        new_data = new_data.ipermute(order)
 
-        return newData
+        return new_data
 
-    def ttv(self, vec=None, mode=None, opt=None):
-        # multiplies the Tensor with the given vector.
-        # the given vector is a single 1-D array with list or numpy.array.
-        if (vec is None):
+    def ttv(self, vec=None, mode=None):
+        """ Multiplies the Tensor with the given vector.
+           the given vector is a single 1-D array with list or numpy.array."""
+        if vec is None:
             raise ValueError('Tensor/TTV: vector (vec) needs to be specified.')
 
         if mode is None or mode.__class__ != int or mode > self.ndims or mode < 1:
@@ -206,39 +208,46 @@ class Tensor(object):
             raise ValueError('Tensor/TTV: vector dimension must agree.')
 
         dim = mode - 1
-        N = self.ndims
+        n = self.ndims
         shape = list(self.shape)
-        order = [dim] + range(0, dim) + range(dim + 1, N)
-        newData = self.permute(order).data
-        newData = newData.reshape(shape[dim], tools.prod(shape) / shape[dim])
-        newData = np.dot(vector, newData)
-        newShape = [1] + shape[0:dim] + shape[dim + 1:N]
-        newData = Tensor(newData.reshape(newShape))
-        newData = newData.ipermute(order)
+        order = [dim] + range(0, dim) + range(dim + 1, n)
+        new_data = self.permute(order).data
+        new_data = new_data.reshape(shape[dim], tools.prod(shape) / shape[dim])
+        new_data = np.dot(vector, new_data)
+        new_shape = [1] + shape[0:dim] + shape[dim + 1:n]
+        new_data = Tensor(new_data.reshape(new_shape))
+        new_data = new_data.ipermute(order)
 
-        return newData
+        return new_data
 
     def norm(self):
-        """return an Frobenius norm of the Tensor"""
+        """Return the Frobenius norm of the Tensor"""
         return np.linalg.norm(self.data)
 
-    def unfold(self, n):
+    def unfold(self, n=None):
+        """Return the mode-n unfold of the Tensor."""
+        if n is None:
+            raise ValueError('Tensor/UNFOLD: unfold mode n (int) needs to be specified.')
         N = self.ndims
         temp1 = [n]
         temp2 = range(n)
         temp3 = range(n + 1, N)
         temp1[len(temp1):len(temp1)] = temp2
         temp1[len(temp1):len(temp1)] = temp3
-        Xn = self.permute(temp1)
-        Xn = Xn.tondarray()
-        Xn = Xn.reshape([Xn.shape[0], np.prod(Xn.shape) / Xn.shape[0]])
-        return Xn
+        xn = self.permute(temp1)
+        xn = xn.tondarray()
+        xn = xn.reshape([xn.shape[0], np.prod(xn.shape) / xn.shape[0]])
+        return xn
 
-    def nvecs(self, n, r):
-        """return first r eigenvector of the mode-n unfolding matrix"""
-        Xn = self.unfold(n)
-        [EigenValue, EigenVector] = np.linalg.eig(Xn.dot(Xn.transpose()))
-        return EigenVector[:, range(r)]
+    def nvecs(self, n=None, r=None):
+        """Return first r eigenvectors of the mode-n unfolding matrix"""
+        if n is None:
+            raise ValueError('Tensor/NVECS: unfold mode n (int) needs to be specified.')
+        if r is None:
+            raise ValueError('Tensor/NVECS: the number of eigenvectors r needs to be specified.')
+        xn = self.unfold(n)
+        [eigen_value, eigen_vector] = np.linalg.eig(xn.dot(xn.transpose()))
+        return eigen_vector[:, range(r)]
 
 
 if __name__ == '__main__':

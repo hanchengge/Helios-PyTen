@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-__author__ = "Qingquan Song"
-__copyright__ = "Copyright 2016, The Helios Project"
-
 import numpy as np
 import pyten.tenclass
 from pyten.tools import tendiag, khatrirao
@@ -9,27 +5,34 @@ import pyten.method
 
 
 class onlineCP(object):
-    """  Accelerating Online CP Decompositions for Higher Order Tensors. """
-    # This routine solves the online Tensor decomposition problem using CP decomposition
+    """
+    Accelerating Online CP Decompositions for Higher Order Tensors KDD'16 Shuo Zhou et al.
+     This routine solves the online Tensor decomposition problem using CP decomposition
+    """
 
-    def __init__(self, initX, rank=20, tol=1e-8, printitn=100):
-        # Initialization stage of OnlineCP
-        # input:  initX, data Tensor used for initialization
-        #         As, a cell array contains the loading matrices of initX
-        #         R, Tensor rank
-        # ouputs: Ps, Qs, cell arrays contain the complementary matrices
+    def __init__(self, init_x, rank=20, tol=1e-8, printitn=100):
+        """
+        Initialization stage of OnlineCP
+        ---------
+        :param  init_x: data Tensor used for initialization
+                 As: a list of array contains the loading matrices of init_x
+                 R: Tensor rank
+        ---------
+        :return Ps, Qs, cell arrays contain the complementary matrices
+        ---------
+        """
 
         # if As is not given, calculate the CP decomposition of the initial data
         if type(rank) == list or type(rank) == tuple:
             rank = rank[0]
-        if not initX:
+        if not init_x:
             raise ValueError("OnlineCP: Initial Tensor cannot be empty!")
-        elif type(initX) != pyten.tenclass.Tensor and type(initX) != np.ndarray:
+        elif type(init_x) != pyten.tenclass.Tensor and type(init_x) != np.ndarray:
             raise ValueError("OnlineCP: cannot recognize the format of observed Tensor!")
-        elif type(initX) == np.ndarray:
-            self.T = pyten.tenclass.Tensor(initX)
+        elif type(init_x) == np.ndarray:
+            self.T = pyten.tenclass.Tensor(init_x)
         else:
-            self.T = initX
+            self.T = init_x
 
         self.ndims = self.T.ndims
         self.shape = self.T.shape
@@ -75,6 +78,9 @@ class onlineCP(object):
         for i in range(self.ndims):
             self.X = self.X.ttm(self.As[i], i + 1)
 
+        self.Ks = None
+        self.alpha = None
+
     def getKhatriRaoList(self):
         lefts = self.As[self.ndims - 2]
         rights = self.As[0]
@@ -103,21 +109,21 @@ class onlineCP(object):
                 self.H = self.H * (np.dot(self.As[n].T, self.As[n]))
 
     def update(self, newX):
-        ## Update stage of OnlineCP
-        # input:  newX, the new incoming data Tensor
-        #         As, a cell array contains the previous loading matrices of initX
-        #         Ps, Qs, cell arrays contain the previous complementary matrices
-        # ouputs: As, a cell array contains the updated loading matrices of initX.
-        #             To save time, As(N) is not modified, instead, projection of
-        #             newX on time mode (alpha) is given in the output
-        #         Ps, Qs, cell arrays contain the updated complementary matrices
-        #         alpha, coefficient on time mode of newX
+        """ Update stage of OnlineCP
+            Input:  newX, the new incoming data Tensor
+                    As, a cell array contains the previous loading matrices of initX
+                    Ps, Qs, cell arrays contain the previous complementary matrices
+            Ouputs: As, a cell array contains the updated loading matrices of initX.
+                    To save time, As(N) is not modified, instead, projection of
+                    newX on time mode (alpha) is given in the output
+                    Ps, Qs, cell arrays contain the updated complementary matrices
+                    alpha, coefficient on time mode of newX """
 
         dims = list(newX.shape)
         if len(dims) == self.ndims - 1:
             dims.append(1)
 
-        batchSize = dims[self.ndims - 1]
+        # batchSize = dims[self.ndims - 1]
         self.getKhatriRaoList()
         self.getHadamard()
 

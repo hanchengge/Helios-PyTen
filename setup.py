@@ -53,10 +53,10 @@ setup(name = "pyten",
       packages=find_packages(),
       include_package_data=True,
       url="",
-      author = "Helios",
+      author = "HELIOS",
       author_email = "qqsong@tamu.edu",
       description="Tools for the decomposition & completion of tensors",
-      #      long_description=open("README.rst").read(),
+      #      long_description=open("README.rst").read(),d
       zip_safe = False,         # I need this for MPI purposes
       cmdclass={'install': pyten_install,
                 'develop': pyten_develop},
