@@ -39,8 +39,8 @@ class MAST(object):
         self.pre_C = self.C
         self.OmegaC = omega
         self.As = decomp
-        self.olddims = olddims
-        self.newdims = newdims
+        self.olddims = olddims.astype(int)
+        self.newdims = newdims.astype(int)
         self.idx = idx
         if type(rank) == list or type(rank) == tuple:
             rank = rank[0]
